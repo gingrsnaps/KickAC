@@ -5,32 +5,72 @@
     <title>Provisioning Simulator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-        body { background: #111; color: #eee; font-family: 'Consolas', monospace; padding: 20px; }
+        body { background: #0c0c0c; color: #ccc; font-family: 'Consolas', 'Monaco', monospace; padding: 20px; }
+        
         #console { 
-            background: #000; border: 1px solid #333; height: 500px; 
-            overflow-y: auto; padding: 10px; margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0,255,0,0.1);
+            background: #000; 
+            border: 1px solid #333; 
+            height: 600px; 
+            overflow-y: auto; 
+            padding: 15px; 
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            font-size: 14px;
         }
-        .line { margin: 2px 0; }
-        .SYSTEM { color: #0ff; font-weight: bold; }
-        .SUCCESS { color: #0f0; }
-        .WARN { color: #ff0; }
-        .ERROR { color: #f00; }
-        .DEBUG { color: #555; }
-        .INFO { color: #ccc; }
-        input, button { 
-            padding: 10px; background: #222; border: 1px solid #444; color: #fff; 
-            font-family: inherit; cursor: pointer;
+
+        /* Scrollbar Styling */
+        #console::-webkit-scrollbar { width: 8px; }
+        #console::-webkit-scrollbar-track { background: #000; }
+        #console::-webkit-scrollbar-thumb { background: #333; }
+
+        .line { margin: 4px 0; white-space: pre-wrap; }
+        
+        /* Log Levels */
+        .SYSTEM  { color: #00ffff; font-weight: bold; }
+        .SUCCESS { color: #00ff00; font-weight: bold; }
+        .WARN    { color: #ffff00; }
+        .ERROR   { color: #ff3333; }
+        .DEBUG   { color: #555; }
+        .INFO    { color: #888; }
+        
+        /* New Styles for Credentials */
+        .DATA { color: #ffffff; }
+        .Highlight { 
+            color: #000; 
+            background-color: #00ff00; 
+            display: inline-block; 
+            padding: 2px 5px; 
+            font-weight: bold;
+            margin-top: 5px;
         }
-        button:hover { background: #333; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            background: #111;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+
+        input { 
+            padding: 10px; background: #000; border: 1px solid #444; color: #fff; 
+            font-family: inherit; width: 60px; text-align: center;
+        }
+        button { 
+            padding: 10px 20px; background: #222; border: 1px solid #444; color: #fff; 
+            font-family: inherit; cursor: pointer; transition: background 0.2s;
+        }
+        button:hover { background: #333; border-color: #666; }
     </style>
 </head>
 <body>
-    <h1>Account Provisioning Simulator</h1>
+    <h2 style="color: #fff; margin-bottom: 10px;">>> KICK_PROVISIONER_V2</h2>
     <div id="console"></div>
-    <div>
+    
+    <div class="controls">
         <input type="number" id="amount" value="5" min="1" max="10">
-        <button onclick="run()">Start Simulation</button>
+        <button onclick="run()">EXECUTE BATCH</button>
+        <button onclick="clearConsole()">CLEAR LOGS</button>
     </div>
 
     <script>
@@ -40,7 +80,14 @@
         socket.on('log', (data) => {
             const div = document.createElement('div');
             div.className = `line ${data.type}`;
-            div.textContent = `> [${data.type}] ${data.message}`;
+            
+            // formatting
+            if(data.type === 'Highlight') {
+                div.textContent = ` 2FA CODE : [ ${data.message.split(': ')[1]} ] `;
+            } else {
+                div.textContent = data.message.startsWith('>') ? data.message : `> ${data.message}`;
+            }
+
             con.appendChild(div);
             con.scrollTop = con.scrollHeight;
         });
@@ -52,6 +99,10 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({amount: amt})
             });
+        }
+        
+        function clearConsole() {
+            con.innerHTML = '';
         }
     </script>
 </body>
